@@ -1,6 +1,7 @@
 // The 100x funnel squeezed into 40% of the screen, so WhatsApp can live in the
 // other 60%. One screen, nothing to scroll except the questions themselves.
 import { useEffect, useMemo, useState } from "react";
+import { saveSplit } from "@/movement-care/backend";
 import { Link } from "@tanstack/react-router";
 import { Activity, ArrowLeft, ArrowRight, BellRing, ListChecks, Menu, PhoneCall, ShieldAlert, UserCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -95,7 +96,11 @@ export function SplitFlow({ embedded = false, focus, panelOnly = false }: { embe
   const [screenId, setScreenId] = useState<string>("");
   const [pane, setPane] = useState<Pane>("WORK");
   const [nextAction, setNextAction] = useState(NEXT_ACTIONS[0]!);
-  const [due, setDue] = useState(() => new Date(Date.now() + 2 * 3_600_000).toISOString().slice(0, 16));
+  const [due, setDue] = useState(() => {
+    const d = new Date(Date.now() + 2 * 3_600_000);
+    const offset = d.getTimezoneOffset();
+    return new Date(d.getTime() - offset * 60_000).toISOString().slice(0, 16);
+  });
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
@@ -410,10 +415,26 @@ export function SplitFlow({ embedded = false, focus, panelOnly = false }: { embe
             <select className="h-7 min-w-[8rem] flex-1 rounded-md border bg-background px-1 text-[10px]" value={nextAction} onChange={(e) => setNextAction(e.target.value)}>
               {NEXT_ACTIONS.map((a) => <option key={a} value={a}>{a}</option>)}
             </select>
-            <Input type="datetime-local" className="h-7 w-[8.8rem] shrink-0 text-[10px]" value={due} onChange={(e) => setDue(e.target.value)} />
-            <Button size="sm" variant="secondary" className="h-7 shrink-0 px-2 text-[10px]"
-              onClick={() => { setNext(lead.id, nextAction, new Date(due).toISOString()); toast.success("Next step and deadline locked"); }}>
-              Lock
+            <span className="text-[10px] font-medium text-muted-foreground">
+              Due by
+            </span>
+
+            <Input
+              type="datetime-local"
+              className="h-7 w-[8.8rem] shrink-0 text-[10px]"
+              value={due}
+              onChange={(e) => setDue(e.target.value)}
+            />
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-7 shrink-0 px-2 text-[10px]"
+              onClick={() => {
+                setNext(lead.id, nextAction, new Date(due).toISOString());
+                toast.success("Next action and deadline saved");
+              }}
+            >
+              Save for next action
             </Button>
           </div>
         </footer>

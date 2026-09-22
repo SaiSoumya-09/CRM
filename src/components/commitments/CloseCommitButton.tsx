@@ -80,6 +80,10 @@ export function CloseCommitButton({ leadId, leadName, leadPhone = "", actorName 
       toast.error("Pick the exact date you will close this");
       return;
     }
+    if (steps.length === 0) {
+      toast.error("Choose at least one step before committing to close");
+      return;
+    }
     promiseClose({ leadId, leadName, leadPhone, windowId, customDate, timeOfDay, steps, note, by: actorName });
     toast.success(isChange ? `Promise moved — ${def.short}` : `Committed: ${leadName} closes ${fmt(previewDue)}`, {
       description: steps.length ? `${steps.length} step${steps.length === 1 ? "" : "s"} on your plan` : "No steps picked — add them when you know the plan.",

@@ -37,14 +37,14 @@ interface Props {
   onReplace: (outUlid: string, inUlid: string) => void;
   onClear: () => void;
   onCreateLead: (input: NewLeadInput) => void;
-  onFillDemo: () => void;
+  onFillTop30: () => void;
   onStartEmpty: () => void;
   runningFor: string | null;
 }
 
 export function ManualDraftPanel({
   open, onClose, candidates, manualList, manualMode, manualSize,
-  onManualMode, onManualSize, onAdd, onRemove, onReplace, onClear, onCreateLead, onFillDemo,
+  onManualMode, onManualSize, onAdd, onRemove, onReplace, onClear, onCreateLead, onFillTop30,
   onStartEmpty, runningFor,
 }: Props) {
   const [query, setQuery] = useState("");
@@ -96,7 +96,7 @@ export function ManualDraftPanel({
           <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={onStartEmpty}>
             <Timer className="h-3 w-3" /> {runningFor ? `Restart · clock ${runningFor}` : `Start with ${manualSize} empty rows`}
           </Button>
-          <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={onFillDemo}>
+          <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={onFillTop30}>
             <Wand2 className="h-3 w-3" /> Demo: fill all {manualSize}
           </Button>
           {picked.length > 0 && (
@@ -197,9 +197,19 @@ export function ManualDraftPanel({
           <p className="text-[10px] text-muted-foreground">
             {manualMode ? "Your queue shows only the leads you picked." : "Turn on “I pick every lead” to work your own list."}
           </p>
-          <Button size="sm" className="ml-auto h-7 text-[10px]" onClick={() => { onManualMode(true); onClose(); }}>
-            Work this draft
-          </Button>
+          <Button
+            size="sm"
+            className="ml-auto h-7 text-[10px]"
+            onClick={() => {
+              if (!manualMode) {
+                onFillTop30();
+              }
+              onManualMode(true);
+              onClose();
+            }}
+          >
+            {manualMode ? "Work this draft" : "Work today's top 30"}
+        </Button>
         </footer>
       </div>
     </div>

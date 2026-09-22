@@ -326,8 +326,10 @@ export function WorkPanel({ ulid, meta }: { ulid: string | null; meta: Meta }) {
         <Cell label="Stage">{st.stage}</Cell>
         <Cell label="Work">{st.work}</Cell>
         <Cell label="Next action">
-          {st.nextAction ? `${st.nextAction.kind} · ${new Date(st.nextAction.dueAt).toLocaleTimeString()}` : "—"}
-        </Cell>
+        {st.nextAction
+          ? `${st.nextAction.label ?? st.nextAction.kind} · ${new Date(st.nextAction.dueAt).toLocaleTimeString()}`
+          : "—"}
+      </Cell>
         <Cell label="Waiting">{st.customerWaitingSince ? `${rel(st.customerWaitingSince)} ago` : "—"}</Cell>
         <Cell label="Tour">{st.tourAt ? `${new Date(st.tourAt).toLocaleString()}${st.tourConfirmed ? " ✓" : " (unconfirmed)"}` : "—"}</Cell>
       </div>
@@ -366,6 +368,19 @@ export function WorkPanel({ ulid, meta }: { ulid: string | null; meta: Meta }) {
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
           Next action (mandatory before you leave)
         </div>
+        {st.nextAction && (
+        <div className="rounded-md border border-border bg-muted/30 p-2">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+            Current next step
+          </div>
+          <div className="text-xs font-medium mt-1">
+            {st.nextAction.label ?? st.nextAction.kind}
+          </div>
+          <div className="text-[10px] text-muted-foreground mt-0.5">
+            Due {new Date(st.nextAction.dueAt).toLocaleTimeString()}
+          </div>
+        </div>
+      )}
         <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note for the next step…" className="h-8 text-xs" />
         <div className="flex flex-wrap gap-1.5">
           <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => nextIn(30, "call")}>Call in 30m</Button>

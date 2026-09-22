@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { saveMovementCare } from "./src/backend";
 import {
   AlertTriangle, CheckCircle2, ClipboardCopy, Clock3, Flag, Goal,
   Building2, Hand, MessageCircle, Phone, PhoneCall, PhoneOff, PlayCircle, PlusCircle, ShieldCheck, Timer,
@@ -161,10 +162,35 @@ export function MovementCare() {
     if (nextStage) setCommitCount(nextStage.dayCount);
   };
 
-  const startDay = () => {
-    commit({ role, goal, commitCount: Math.max(1, commitCount), supportNeeded: support.trim(), closingPropertyIds: aimProperties });
+  const startDay = async () => {
+    //stores what user selects
+  commit({
+    role,
+    goal,
+    commitCount: Math.max(1, commitCount),
+    supportNeeded: support.trim(),
+    closingPropertyIds: aimProperties,
+  });
+  //convert selected info into json object
+  try {
+    await saveMovementCare({
+      leadId: selectedState?.ulid ?? "CARE",
+      leadName: me.name,
+      leadPhone: selectedState?.phone ?? "",
+      label: GOAL_TITLE[goal],
+      kind: goal,
+      dueAt: dueForGoal(goal),
+      ownerId: me.id,
+      ownerName: me.name,
+      note: support.trim(),
+    });
+
     toast.success(`${goal} result committed for today`);
-  };
+  } catch {
+    toast.success(`${goal} result committed for today`);
+    toast.error("Backend connection failed");
+  }
+};
 
   const createManualLead = (input: NewLeadInput) => {
     const lead = createLead({
@@ -189,7 +215,7 @@ export function MovementCare() {
     toast.success(`${lead.name} added by hand and put in your draft`);
   };
 
-  const fillManualDemo = () => {
+  const fillTop30 = () => {
     const picked = new Set(manualList);
     for (const item of systemQueue) {
       if (picked.size >= manualSize) break;
@@ -197,7 +223,7 @@ export function MovementCare() {
     }
     setManualList(Array.from(picked));
     setManualMode(true);
-    toast.success(`Demo draft built — ${Math.min(picked.size, manualSize)} leads picked by hand`);
+    toast.success(`${Math.min(picked.size, manualSize)} top leads added to today's draft`);
   };
 
   const acceptDraft = () => {
@@ -623,7 +649,7 @@ export function MovementCare() {
         manualList={manualList} manualMode={manualMode} manualSize={manualSize}
         onManualMode={setManualMode} onManualSize={setManualSize} onAdd={addToManual}
         onRemove={removeFromManual} onReplace={replaceInManual} onClear={clearManual}
-        onCreateLead={createManualLead} onFillDemo={fillManualDemo} onStartEmpty={startEmptyDraft} runningFor={elapsed} />
+        onCreateLead={createManualLead} onFillTop30={fillTop30} onStartEmpty={startEmptyDraft} runningFor={elapsed} />
 
       {showFormat && (
         <FormatDrawer onClose={() => setShowFormat(false)}
